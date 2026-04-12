@@ -34,6 +34,11 @@ jobs:
           cp .env.example .env
           sed -i 's|MONGODB_URL=.*|MONGODB_URL=mongodb://127.0.0.1:27017|' .env
           sed -i 's|JWT_SECRET_KEY=.*|JWT_SECRET_KEY=ci-test-secret-key-for-smoke-test|' .env
+          # pydantic-settings v2 requires JSON array format for List[str] fields
+          sed -i 's|CORS_ORIGINS=.*|CORS_ORIGINS=["http://localhost:3000"]|' .env
+          sed -i 's|CORS_ALLOW_METHODS=.*|CORS_ALLOW_METHODS=["*"]|' .env
+          sed -i 's|CORS_ALLOW_HEADERS=.*|CORS_ALLOW_HEADERS=["*"]|' .env
+          sed -i 's|ALLOWED_FILE_EXTENSIONS=.*|ALLOWED_FILE_EXTENSIONS=[".pdf",".doc",".docx"]|' .env
 
       - name: Start backend server
         run: |
