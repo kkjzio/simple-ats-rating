@@ -24,7 +24,7 @@ env/
 
 # Logs
 *.log
-logs/
+/logs/
 
 # Database
 *.db
