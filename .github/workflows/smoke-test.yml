@@ -1,0 +1,94 @@
+name: Smoke Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  backend-smoke:
+    name: Backend Smoke Test
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install Python dependencies
+        run: uv sync
+
+      - name: Create .env for CI
+        run: |
+          cp .env.example .env
+          sed -i 's|MONGODB_URL=.*|MONGODB_URL=mongodb://127.0.0.1:27017|' .env
+          sed -i 's|JWT_SECRET_KEY=.*|JWT_SECRET_KEY=ci-test-secret-key-for-smoke-test|' .env
+
+      - name: Start backend server
+        run: |
+          uv run uvicorn main:app --host 0.0.0.0 --port 8000 &
+          echo $! > /tmp/server.pid
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Server is ready after ${i}s"
+              break
+            fi
+            echo "Waiting... (${i}/30)"
+            sleep 1
+          done
+
+      - name: Health check
+        run: |
+          RESP=$(curl -sf http://localhost:8000/health)
+          echo "Response: $RESP"
+          echo "$RESP" | grep -q '"database":"connected"' || \
+            (echo "Database not connected!" && exit 1)
+
+      - name: Login API smoke test
+        run: |
+          RESP=$(curl -sf -X POST http://localhost:8000/api/v1/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"Admin@123"}')
+          echo "Response: $RESP"
+          echo "$RESP" | grep -q '"success":true' || \
+            (echo "Login failed!" && exit 1)
+
+      - name: Stop backend server
+        if: always()
+        run: |
+          if [ -f /tmp/server.pid ]; then
+            kill $(cat /tmp/server.pid) 2>/dev/null || true
+          fi
+
+  frontend-smoke:
+    name: Frontend Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install frontend dependencies
+        working-directory: simple-ats-rating-ui
+        run: bun install
+
+      - name: Build frontend
+        working-directory: simple-ats-rating-ui
+        run: bun run build
