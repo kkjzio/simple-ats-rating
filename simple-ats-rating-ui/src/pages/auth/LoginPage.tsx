@@ -218,11 +218,11 @@ export default function LoginPage() {
               </Button>
 
               {/* 测试凭据提示 */}
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              {/* <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800 font-medium mb-1">测试凭据：</p>
                 <p className="text-xs text-blue-600">用户名: admin</p>
                 <p className="text-xs text-blue-600">密码: Admin@123</p>
-              </div>
+              </div> */}
             </form>
           </Form>
         </CardContent>
