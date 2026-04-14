@@ -1,0 +1,44 @@
+services:
+
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-}
+    networks:
+      - internal
+
+  backend:
+    image: ${DOCKERHUB_USERNAME:-local}/simple-ats-rating-backend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - internal
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME:-local}/simple-ats-rating-frontend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  uploads_data:
