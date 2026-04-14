@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     app_name: str = Field(default="ATS Rating System", description="应用名称")
     app_version: str = Field(default="0.1.0", description="应用版本")
     debug: bool = Field(default=False, description="调试模式")
+    enable_docs: bool = Field(default=True, description="是否启用API文档（/docs, /redoc, /openapi.json）")
     
     # MongoDB配置
     mongodb_url: str = Field(
