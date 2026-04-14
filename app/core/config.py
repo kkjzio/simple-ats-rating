@@ -7,13 +7,15 @@ from typing import List
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app import __version__
+
 
 class Settings(BaseSettings):
     """应用配置类"""
-    
+
     # 应用基础配置
     app_name: str = Field(default="ATS Rating System", description="应用名称")
-    app_version: str = Field(default="0.1.0", description="应用版本")
+    app_version: str = Field(default=__version__, description="应用版本")
     debug: bool = Field(default=False, description="调试模式")
     enable_docs: bool = Field(default=True, description="是否启用API文档（/docs, /redoc, /openapi.json）")
     
