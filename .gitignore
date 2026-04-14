@@ -37,7 +37,7 @@ temp/
 # OS
 .DS_Store
 Thumbs.db
-uv.lock
+# uv.lock
 .pytest_cache
 .worktrees/
 
