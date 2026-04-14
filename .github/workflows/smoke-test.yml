@@ -97,3 +97,51 @@ jobs:
       - name: Build frontend
         working-directory: simple-ats-rating-ui
         run: bun run build
+
+      - name: Start production server
+        working-directory: simple-ats-rating-ui
+        run: |
+          API_PROXY_TARGET=http://localhost:8000 bun run start &
+          echo $! > /tmp/frontend.pid
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+              echo "Frontend server is ready after ${i}s"
+              break
+            fi
+            if [ "$i" = "30" ]; then
+              echo "Frontend server failed to start!"
+              exit 1
+            fi
+            echo "Waiting... (${i}/30)"
+            sleep 1
+          done
+
+      - name: Verify HTML response
+        run: |
+          RESP=$(curl -sf http://localhost:3000)
+          echo "$RESP" | grep -q '<div id="root">' || \
+            (echo "Missing root div!" && exit 1)
+          echo "HTML response OK"
+
+      - name: Verify static assets loadable
+        run: |
+          # 从 HTML 中提取 JS 资源路径并验证可访问
+          RESP=$(curl -sf http://localhost:3000)
+          JS_PATH=$(echo "$RESP" | grep -oP 'src="[^"]*\.js"' | head -1 | grep -oP '"[^"]*"' | tr -d '"')
+          if [ -n "$JS_PATH" ]; then
+            STATUS=$(curl -o /dev/null -sf -w "%{http_code}" "http://localhost:3000${JS_PATH}")
+            [ "$STATUS" = "200" ] || (echo "JS asset returned $STATUS" && exit 1)
+            echo "JS asset OK: $JS_PATH"
+          else
+            echo "No JS asset found in HTML, skipping"
+          fi
+
+      - name: Stop frontend server
+        if: always()
+        run: |
+          if [ -f /tmp/frontend.pid ]; then
+            kill $(cat /tmp/frontend.pid) 2>/dev/null || true
+          fi
