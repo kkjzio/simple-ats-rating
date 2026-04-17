@@ -12,7 +12,7 @@ services:
       - internal
 
   backend:
-    image: ${DOCKERHUB_USERNAME:-local}/simple-ats-rating-backend:${TAG:-latest}
+    image: kkjzio/simple-ats-rating-backend:${TAG:-latest}
     restart: unless-stopped
     depends_on:
       - mongodb
@@ -24,7 +24,7 @@ services:
       - internal
 
   frontend:
-    image: ${DOCKERHUB_USERNAME:-local}/simple-ats-rating-frontend:${TAG:-latest}
+    image: kkjzio/simple-ats-rating-frontend:${TAG:-latest}
     restart: unless-stopped
     depends_on:
       - backend
