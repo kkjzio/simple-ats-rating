@@ -22,6 +22,10 @@ WORKDIR /app
 
 # 复制依赖描述文件并安装生产依赖
 COPY simple-ats-rating-ui/package.json simple-ats-rating-ui/bun.lock ./
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl
+
 RUN bun install --frozen-lockfile --production
 
 # 从 builder 复制构建产物

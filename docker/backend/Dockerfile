@@ -8,6 +8,9 @@ WORKDIR /app
 # 先复制依赖描述文件，利用 Docker 层缓存
 COPY pyproject.toml uv.lock ./
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl
+
 # 安装依赖（不含 dev），严格按 lock 文件
 RUN uv sync --frozen --no-dev --no-install-project
 
