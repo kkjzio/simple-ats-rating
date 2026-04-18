@@ -10,6 +10,7 @@ COPY simple-ats-rating-ui/package.json simple-ats-rating-ui/bun.lock ./
 RUN bun install --frozen-lockfile
 
 # 复制完整源码（含 styles/ — src/index.css 通过 @import "../styles/globals.css" 引用）
+COPY simple-ats-rating-ui/build.ts ./
 COPY simple-ats-rating-ui/src ./src
 COPY simple-ats-rating-ui/styles ./styles
 COPY simple-ats-rating-ui/bunfig.toml ./
