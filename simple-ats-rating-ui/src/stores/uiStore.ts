@@ -40,7 +40,7 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set, get) => ({
   // 初始状态
-  sidebarCollapsed: false,
+  sidebarCollapsed: true,
   globalLoading: false,
   toasts: [],
   confirmDialog: {
