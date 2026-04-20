@@ -42,9 +42,10 @@ export function EditCandidatePage() {
   const updateMutation = useMutation({
     mutationFn: (data: CreateCandidateRequest) => {
       const updateData = {
-        order: undefined as number | undefined,
-        status: undefined as string | undefined,
-        notes: data.notes ?? undefined,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        notes: data.notes,
         resumes: data.resumes ?? undefined,
       };
       return candidateService.updateCandidate(id!, updateData);

@@ -130,7 +130,7 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({
       email: values.email || null,
       education: values.education || null,
       work_experience: values.work_experience || null,
-      notes: values.notes || null,
+      notes: values.notes ?? null,
       resumes: newFiles.length > 0 ? newFiles : null,
     };
 

@@ -41,6 +41,9 @@ class CandidateCreate(BaseModel):
 
 class CandidateUpdate(BaseModel):
     """更新候选人请求"""
+    name: Optional[str] = Field(None, min_length=1, max_length=50, description="候选人姓名")
+    phone: Optional[str] = Field(None, description="手机号")
+    email: Optional[EmailStr] = Field(None, description="邮箱")
     order: Optional[int] = Field(None, ge=1, description="面试顺序")
     status: Optional[str] = Field(None, description="状态")
     notes: Optional[str] = Field(None, max_length=500, description="备注")

@@ -514,6 +514,22 @@ async def update_candidate(
     if not candidate:
         raise HTTPException(status_code=404, detail="候选人不存在")
 
+    # 更新用户 profile（name/phone/email）
+    user_profile_update = {}
+    if candidate_data.name is not None:
+        user_profile_update["profile.name"] = candidate_data.name
+    if candidate_data.phone is not None:
+        user_profile_update["profile.phone"] = candidate_data.phone
+    if candidate_data.email is not None:
+        user_profile_update["profile.email"] = candidate_data.email
+
+    if user_profile_update:
+        user_profile_update["updated_at"] = get_current_time()
+        await db.users.update_one(
+            {"_id": ObjectId(candidate["user_id"])},
+            {"$set": user_profile_update}
+        )
+
     # 构建更新数据
     update_data = {"updated_at": get_current_time()}
 

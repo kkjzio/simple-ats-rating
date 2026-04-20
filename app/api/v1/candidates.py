@@ -160,6 +160,9 @@ async def get_candidate_detail(
 @router.put("/candidates/{candidate_id}", response_model=dict)
 async def update_candidate(
     candidate_id: str,
+    name: Optional[str] = Form(None, description="候选人姓名"),
+    phone: Optional[str] = Form(None, description="手机号"),
+    email: Optional[str] = Form(None, description="邮箱"),
     order: Optional[int] = Form(None, description="面试顺序"),
     status: Optional[str] = Form(None, description="状态"),
     notes: Optional[str] = Form(None, description="备注"),
@@ -169,7 +172,7 @@ async def update_candidate(
 ):
     """更新候选人信息（仅管理员），新上传的简历追加到已有列表"""
     try:
-        candidate_data = CandidateUpdate(order=order, status=status, notes=notes)
+        candidate_data = CandidateUpdate(name=name, phone=phone, email=email, order=order, status=status, notes=notes)
         valid_resumes = [f for f in resumes if f and f.filename] if resumes else []
         current_user_dict = {
             "_id": current_user.id,

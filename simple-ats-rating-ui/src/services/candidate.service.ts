@@ -163,9 +163,12 @@ export const updateCandidate = async (
   data: UpdateCandidateRequest & { resumes?: File[] | null }
 ): Promise<CandidateResponse> => {
   const formData = new FormData();
+  if (data.name !== undefined && data.name !== null) formData.append('name', data.name);
+  if (data.phone !== undefined && data.phone !== null) formData.append('phone', data.phone);
+  if (data.email !== undefined && data.email !== null) formData.append('email', data.email);
   if (data.order !== undefined && data.order !== null) formData.append('order', data.order.toString());
   if (data.status) formData.append('status', data.status);
-  if (data.notes !== undefined && data.notes !== null) formData.append('notes', data.notes);
+  if (data.notes !== undefined) formData.append('notes', data.notes ?? '');
   if (data.resumes && data.resumes.length > 0) {
     data.resumes.forEach((file) => formData.append('resumes', file));
   }
