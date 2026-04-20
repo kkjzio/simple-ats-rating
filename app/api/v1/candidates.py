@@ -90,6 +90,9 @@ async def create_candidate(
     name: Optional[str] = Form(None, description="姓名"),
     phone: Optional[str] = Form(None, description="手机号"),
     email: Optional[str] = Form(None, description="邮箱"),
+    gender: Optional[str] = Form(None, description="性别"),
+    education: Optional[str] = Form(None, description="教育背景"),
+    work_experience: Optional[int] = Form(None, description="工作年限"),
     order: Optional[int] = Form(None, description="面试顺序"),
     notes: Optional[str] = Form(None, description="备注"),
     resumes: List[UploadFile] = File(default=[], description="简历文件列表（支持多个）"),
@@ -104,6 +107,9 @@ async def create_candidate(
             name=name,
             phone=phone,
             email=email,
+            gender=gender,
+            education=education,
+            work_experience=work_experience,
             order=order,
             notes=notes
         )
@@ -163,6 +169,9 @@ async def update_candidate(
     name: Optional[str] = Form(None, description="候选人姓名"),
     phone: Optional[str] = Form(None, description="手机号"),
     email: Optional[str] = Form(None, description="邮箱"),
+    gender: Optional[str] = Form(None, description="性别"),
+    education: Optional[str] = Form(None, description="教育背景"),
+    work_experience: Optional[int] = Form(None, description="工作年限"),
     order: Optional[int] = Form(None, description="面试顺序"),
     status: Optional[str] = Form(None, description="状态"),
     notes: Optional[str] = Form(None, description="备注"),
@@ -172,7 +181,11 @@ async def update_candidate(
 ):
     """更新候选人信息（仅管理员），新上传的简历追加到已有列表"""
     try:
-        candidate_data = CandidateUpdate(name=name, phone=phone, email=email, order=order, status=status, notes=notes)
+        candidate_data = CandidateUpdate(
+            name=name, phone=phone, email=email,
+            gender=gender, education=education, work_experience=work_experience,
+            order=order, status=status, notes=notes
+        )
         valid_resumes = [f for f in resumes if f and f.filename] if resumes else []
         current_user_dict = {
             "_id": current_user.id,

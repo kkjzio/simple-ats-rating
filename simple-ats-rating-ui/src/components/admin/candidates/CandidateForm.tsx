@@ -20,19 +20,11 @@ import {
 import { Input } from '../../ui/input';
 import { Textarea } from '../../ui/textarea';
 import { Button } from '../../ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../ui/select';
 import type { CandidateResponse, CreateCandidateRequest } from '../../../types';
 
 // 表单验证schema
 const candidateFormSchema = z.object({
   name: z.string().min(1, '请输入姓名').max(50, '姓名不能超过50个字符'),
-  gender: z.enum(['男', '女', '']).optional(),
   phone: z
     .string()
     .min(1, '请输入手机号')
@@ -42,13 +34,6 @@ const candidateFormSchema = z.object({
     .email('请输入有效的邮箱地址')
     .optional()
     .or(z.literal('')),
-  education: z.string().max(100, '教育背景不能超过100个字符').optional(),
-  work_experience: z
-    .number()
-    .min(0, '工作经验不能为负数')
-    .max(50, '工作经验不能超过50年')
-    .optional()
-    .nullable(),
   notes: z.string().max(500, '备注不能超过500个字符').optional(),
 });
 
@@ -85,11 +70,8 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({
     resolver: zodResolver(candidateFormSchema),
     defaultValues: {
       name: initialData?.name || '',
-      gender: (initialData?.gender as '男' | '女' | '') || '',
       phone: initialData?.phone || '',
       email: initialData?.email || '',
-      education: initialData?.education || '',
-      work_experience: initialData?.work_experience || undefined,
       notes: initialData?.notes || '',
     },
   });
@@ -125,11 +107,8 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({
   const handleSubmit = (values: CandidateFormValues) => {
     const data: CreateCandidateRequest = {
       name: values.name,
-      gender: values.gender || null,
       phone: values.phone,
       email: values.email || null,
-      education: values.education || null,
-      work_experience: values.work_experience || null,
       notes: values.notes ?? null,
       resumes: newFiles.length > 0 ? newFiles : null,
     };
@@ -157,33 +136,6 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({
                   <FormControl>
                     <Input placeholder="请输入姓名" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* 性别 */}
-            <FormField
-              control={form.control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>性别</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
-                    defaultValue={field.value || 'none'}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="请选择性别" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">不选择</SelectItem>
-                      <SelectItem value="男">男</SelectItem>
-                      <SelectItem value="女">女</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -218,45 +170,6 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({
                       type="email"
                       placeholder="请输入邮箱地址"
                       {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* 教育背景 */}
-            <FormField
-              control={form.control}
-              name="education"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>教育背景</FormLabel>
-                  <FormControl>
-                    <Input placeholder="如：本科、硕士等" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* 工作经验 */}
-            <FormField
-              control={form.control}
-              name="work_experience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>工作经验（年）</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="请输入工作年限"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        field.onChange(value === '' ? undefined : Number(value));
-                      }}
-                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />

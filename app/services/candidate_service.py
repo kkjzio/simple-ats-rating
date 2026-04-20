@@ -105,6 +105,9 @@ def _build_candidate_response(
         # 新字段
         "resume_files": resume_files,
         "status": candidate.get("status", "waiting"),
+        "gender": candidate.get("gender"),
+        "education": candidate.get("education"),
+        "work_experience": candidate.get("work_experience"),
         "total_score": stats.get("total_score"),
         "average_score": stats.get("average_score"),
         "total_scores_count": stats.get("total_scores_count", 0),
@@ -438,6 +441,9 @@ async def create_candidate(
         # 新字段
         "resume_files": saved_resume_files,
         "status": "waiting",
+        "gender": candidate_data.gender,
+        "education": candidate_data.education,
+        "work_experience": candidate_data.work_experience,
         "notes": candidate_data.notes,
         "created_at": get_current_time(),
         "updated_at": get_current_time()
@@ -538,6 +544,15 @@ async def update_candidate(
 
     if candidate_data.status is not None:
         update_data["status"] = candidate_data.status
+
+    if candidate_data.gender is not None:
+        update_data["gender"] = candidate_data.gender
+
+    if candidate_data.education is not None:
+        update_data["education"] = candidate_data.education
+
+    if candidate_data.work_experience is not None:
+        update_data["work_experience"] = candidate_data.work_experience
 
     if candidate_data.notes is not None:
         update_data["notes"] = candidate_data.notes
