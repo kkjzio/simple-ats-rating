@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom"
+import { useEffect } from "react"
 import {
   Home,
   Users,
@@ -101,10 +102,23 @@ const menuItems: MenuItem[] = [
 
 export const Sidebar = () => {
   const { user } = useAuthStore()
-  const { sidebarCollapsed, toggleSidebar } = useUIStore()
+  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useUIStore()
+
+  useEffect(() => {
+    // 移动端默认收起，桌面端默认展开
+    if (window.innerWidth < 768) {
+      setSidebarCollapsed(true)
+    }
+  }, [])
 
   if (!user) {
     return null
+  }
+
+  const closeSidebarOnMobile = () => {
+    if (window.innerWidth < 768) {
+      setSidebarCollapsed(true)
+    }
   }
 
   const filteredMenuItems = menuItems.filter((item) => item.roles.includes(user.role))
@@ -130,6 +144,7 @@ export const Sidebar = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={closeSidebarOnMobile}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
