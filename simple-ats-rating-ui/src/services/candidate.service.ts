@@ -238,6 +238,20 @@ export const reorderCandidates = async (
 };
 
 /**
+ * 修改单个候选人的面试顺序
+ * @param candidateId 候选人ID
+ * @param order 新的面试顺序
+ */
+export const updateCandidateOrder = async (
+  candidateId: string,
+  order: number
+): Promise<void> => {
+  await apiClient.patch(`/candidates/${candidateId}/order`, null, {
+    params: { order },
+  });
+};
+
+/**
  * 按索引下载候选人的指定简历文件
  * @param candidateId 候选人ID
  * @param fileIndex 文件索引（从0开始）
@@ -337,6 +351,7 @@ const candidateService = {
   deleteCandidate,
   importCandidates,
   reorderCandidates,
+  updateCandidateOrder,
   downloadResumeByIndex,
   deleteResumeFile,
   downloadResume,

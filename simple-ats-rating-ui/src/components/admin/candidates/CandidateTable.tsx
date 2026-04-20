@@ -22,11 +22,20 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, FileText, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Eye, FileText, Pencil, Trash2, GripVertical, ListOrdered } from 'lucide-react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../../ui/dialog';
+import { Input } from '../../ui/input';
+import { Label } from '../../ui/label';
 import type { CandidateResponse } from '../../../types';
 
 interface CandidateTableProps {
@@ -34,6 +43,7 @@ interface CandidateTableProps {
   loading?: boolean;
   onReorder?: (candidateIds: string[]) => void;
   onDelete?: (id: string) => void;
+  onUpdateOrder?: (candidateId: string, order: number) => void;
 }
 
 interface SortableRowProps {
@@ -43,6 +53,7 @@ interface SortableRowProps {
   onManageScores: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onUpdateOrder: (id: string) => void;
 }
 
 const getStatusBadge = (status: string) => {
@@ -63,6 +74,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   onManageScores,
   onEdit,
   onDelete,
+  onUpdateOrder,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: candidate.id,
@@ -113,6 +125,9 @@ const SortableRow: React.FC<SortableRowProps> = ({
           <Button variant="ghost" size="sm" onClick={() => onManageScores(candidate.id)} title="评分管理">
             <FileText className="h-4 w-4" />
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => onUpdateOrder(candidate.id)} title="修改顺序">
+            <ListOrdered className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => onEdit(candidate.id)} title="编辑">
             <Pencil className="h-4 w-4" />
           </Button>
@@ -136,9 +151,13 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
   loading = false,
   onReorder,
   onDelete,
+  onUpdateOrder,
 }) => {
   const navigate = useNavigate();
   const [items, setItems] = React.useState(candidates);
+  const [orderDialogOpen, setOrderDialogOpen] = React.useState(false);
+  const [targetCandidateId, setTargetCandidateId] = React.useState<string | null>(null);
+  const [orderInput, setOrderInput] = React.useState('');
 
   React.useEffect(() => {
     setItems(candidates);
@@ -185,6 +204,24 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
     }
   };
 
+  const handleOpenOrderDialog = (id: string) => {
+    const candidate = items.find((c) => c.id === id);
+    setTargetCandidateId(id);
+    setOrderInput(candidate ? String(candidate.order) : '');
+    setOrderDialogOpen(true);
+  };
+
+  const handleConfirmUpdateOrder = () => {
+    const newOrder = parseInt(orderInput, 10);
+    if (!targetCandidateId || isNaN(newOrder) || newOrder < 1) return;
+    if (onUpdateOrder) {
+      onUpdateOrder(targetCandidateId, newOrder);
+    }
+    setOrderDialogOpen(false);
+    setTargetCandidateId(null);
+    setOrderInput('');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -218,7 +255,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               <TableHead>工作经验</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>加权总分</TableHead>
-              <TableHead className="w-40">操作</TableHead>
+              <TableHead className="w-48">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -232,12 +269,36 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                   onManageScores={handleManageScores}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onUpdateOrder={handleOpenOrderDialog}
                 />
               ))}
             </SortableContext>
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>修改面试顺序</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="order-input">面试顺序（第几位上场）</Label>
+            <Input
+              id="order-input"
+              type="number"
+              min={1}
+              value={orderInput}
+              onChange={(e) => setOrderInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleConfirmUpdateOrder()}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>取消</Button>
+            <Button onClick={handleConfirmUpdateOrder}>确认</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DndContext>
   );
 };

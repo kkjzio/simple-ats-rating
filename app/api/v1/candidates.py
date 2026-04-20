@@ -342,6 +342,49 @@ async def import_candidates(
         return error_response(message=f"导入失败: {str(e)}", code=500)
 
 
+@router.patch("/candidates/{candidate_id}/order", response_model=dict)
+async def update_candidate_order(
+    candidate_id: str,
+    order: int = Query(..., ge=1, description="新的面试顺序"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    current_user: User = Depends(require_super_admin)
+):
+    """修改单个候选人的面试顺序，会验证 order 是否在合法范围内"""
+    try:
+        # 获取候选人
+        from bson import ObjectId
+        candidate = await db.candidates.find_one({"_id": ObjectId(candidate_id)})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="候选人不存在")
+
+        session_id = candidate["session_id"]
+        total = await db.candidates.count_documents({"session_id": session_id})
+
+        if order > total:
+            raise HTTPException(
+                status_code=400,
+                detail=f"面试顺序不合法，当前场次共 {total} 位候选人，顺序应在 1 到 {total} 之间"
+            )
+
+        current_user_dict = {
+            "_id": current_user.id,
+            "username": current_user.username,
+            "role": current_user.role.value
+        }
+
+        await candidate_service.update_candidate(
+            db=db,
+            candidate_id=candidate_id,
+            candidate_data=CandidateUpdate(order=order),
+            current_user=current_user_dict
+        )
+        return success_response(message="面试顺序更新成功")
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        return error_response(message=f"更新面试顺序失败: {str(e)}", code=500)
+
+
 @router.post("/sessions/{session_id}/candidates/reorder", response_model=dict)
 async def reorder_candidates(
     session_id: str,

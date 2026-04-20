@@ -126,6 +126,23 @@ export function CandidateListPage() {
     reorderMutation.mutate(candidateIds)
   }
 
+  const updateOrderMutation = useMutation({
+    mutationFn: ({ candidateId, order }: { candidateId: string; order: number }) =>
+      candidateService.updateCandidateOrder(candidateId, order),
+    onSuccess: () => {
+      success("面试顺序已更新", "更新成功")
+      queryClient.invalidateQueries({ queryKey: ["candidates", sessionId] })
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      error(msg || "更新面试顺序失败，请重试", "更新失败")
+    },
+  })
+
+  const handleUpdateOrder = (candidateId: string, order: number) => {
+    updateOrderMutation.mutate({ candidateId, order })
+  }
+
   const handleResetFilters = () => {
     setKeyword("")
     setGender("")
@@ -250,6 +267,7 @@ export function CandidateListPage() {
                 loading={isLoading}
                 onReorder={handleReorder}
                 onDelete={handleDelete}
+                onUpdateOrder={handleUpdateOrder}
               />
 
               {totalPages > 1 && (
