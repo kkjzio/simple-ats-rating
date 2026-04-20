@@ -86,9 +86,9 @@ async def get_session_list(
     # 计算总数
     total = await db.sessions.count_documents(query)
     
-    # 分页查询，按日期倒序
+    # 分页查询，按创建时间倒序
     skip = (page - 1) * page_size
-    cursor = db.sessions.find(query).sort("date", -1).skip(skip).limit(page_size)
+    cursor = db.sessions.find(query).sort("created_at", -1).skip(skip).limit(page_size)
     
     sessions = []
     async for session_data in cursor:
