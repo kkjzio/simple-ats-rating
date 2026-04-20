@@ -41,7 +41,9 @@ import type { CandidateResponse } from '../../../types';
 interface CandidateTableProps {
   candidates: CandidateResponse[];
   loading?: boolean;
-  onReorder?: (candidateIds: string[]) => void;
+  page?: number;
+  pageSize?: number;
+  onReorder?: (orders: { id: string; order: number }[]) => void;
   onDelete?: (id: string) => void;
   onUpdateOrder?: (candidateId: string, order: number) => void;
 }
@@ -98,7 +100,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
       </TableCell>
-      <TableCell className="font-medium">{index + 1}</TableCell>
+      <TableCell className="font-medium">{candidate.order}</TableCell>
       <TableCell className="font-medium">{candidate.name}</TableCell>
       <TableCell>{candidate.gender || '-'}</TableCell>
       <TableCell>{candidate.email || '-'}</TableCell>
@@ -149,6 +151,8 @@ const SortableRow: React.FC<SortableRowProps> = ({
 export const CandidateTable: React.FC<CandidateTableProps> = ({
   candidates,
   loading = false,
+  page = 1,
+  pageSize = 20,
   onReorder,
   onDelete,
   onUpdateOrder,
@@ -178,10 +182,16 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
       const newIndex = items.findIndex((item) => item.id === over.id);
       const newItems = arrayMove(items, oldIndex, newIndex);
 
-      setItems(newItems);
+      // 根据当前页偏移量更新每个候选人的 order
+      const pageOffset = (page - 1) * pageSize;
+      const updatedItems = newItems.map((item, index) => ({
+        ...item,
+        order: pageOffset + index + 1,
+      }));
+      setItems(updatedItems);
 
       if (onReorder) {
-        onReorder(newItems.map((item) => item.id));
+        onReorder(updatedItems.map((item) => ({ id: item.id, order: item.order })));
       }
     }
   };

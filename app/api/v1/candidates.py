@@ -366,11 +366,37 @@ async def update_candidate_order(
                 detail=f"面试顺序不合法，当前场次共 {total} 位候选人，顺序应在 1 到 {total} 之间"
             )
 
+        current_order = candidate.get("order")
+        if current_order == order:
+            return success_response(message="面试顺序更新成功")
+
         current_user_dict = {
             "_id": current_user.id,
             "username": current_user.username,
             "role": current_user.role.value
         }
+
+        # 移位其他候选人
+        if current_order < order:
+            # 目标位置靠后：中间候选人顺序 -1
+            await db.candidates.update_many(
+                {
+                    "session_id": ObjectId(session_id),
+                    "_id": {"$ne": ObjectId(candidate_id)},
+                    "order": {"$gt": current_order, "$lte": order}
+                },
+                {"$inc": {"order": -1}}
+            )
+        else:
+            # 目标位置靠前：中间候选人顺序 +1
+            await db.candidates.update_many(
+                {
+                    "session_id": ObjectId(session_id),
+                    "_id": {"$ne": ObjectId(candidate_id)},
+                    "order": {"$gte": order, "$lt": current_order}
+                },
+                {"$inc": {"order": 1}}
+            )
 
         await candidate_service.update_candidate(
             db=db,

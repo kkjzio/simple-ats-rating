@@ -84,8 +84,8 @@ export function CandidateListPage() {
   })
 
   const reorderMutation = useMutation({
-    mutationFn: (candidateIds: string[]) =>
-      candidateService.reorderCandidates(sessionId, candidateIds),
+    mutationFn: (orders: { id: string; order: number }[]) =>
+      candidateService.reorderCandidates(sessionId, orders),
     onSuccess: () => {
       success("顺序已更新", "更新成功")
       queryClient.invalidateQueries({ queryKey: ["candidates", sessionId] })
@@ -122,8 +122,8 @@ export function CandidateListPage() {
     }
   }
 
-  const handleReorder = (candidateIds: string[]) => {
-    reorderMutation.mutate(candidateIds)
+  const handleReorder = (orders: { id: string; order: number }[]) => {
+    reorderMutation.mutate(orders)
   }
 
   const updateOrderMutation = useMutation({
@@ -265,6 +265,8 @@ export function CandidateListPage() {
               <CandidateTable
                 candidates={candidates}
                 loading={isLoading}
+                page={page}
+                pageSize={pageSize}
                 onReorder={handleReorder}
                 onDelete={handleDelete}
                 onUpdateOrder={handleUpdateOrder}

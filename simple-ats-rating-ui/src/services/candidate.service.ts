@@ -222,18 +222,15 @@ export const importCandidates = async (
 /**
  * 调整候选人顺序
  * @param sessionId 场次ID
- * @param candidateIds 候选人ID列表（按新顺序排列）
+ * @param orders 候选人ID和对应order的列表
  */
 export const reorderCandidates = async (
   sessionId: string,
-  candidateIds: string[]
+  orders: { id: string; order: number }[]
 ): Promise<void> => {
-  const orders = candidateIds.map((candidate_id, index) => ({
-    candidate_id,
-    order: index + 1,
-  }));
-
-  const data: ReorderRequest = { orders };
+  const data: ReorderRequest = {
+    orders: orders.map(({ id, order }) => ({ candidate_id: id, order })),
+  };
   await apiClient.post(`/sessions/${sessionId}/candidates/reorder`, data);
 };
 
