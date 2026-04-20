@@ -5,7 +5,7 @@
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiResponse, ErrorResponse } from '../types';
-import { getToken, getRefreshToken, setToken, removeToken } from '../utils/storage';
+import { getToken, getRefreshToken, setToken, removeToken, clearStorage } from '../utils/storage';
 
 // API基础URL
 export const API_BASE_URL = '/api/v1';
@@ -140,6 +140,9 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as Error, null);
+        
+        // 清除所有认证状态（含 Zustand persist），防止过期状态导致白屏或跳转循环
+        clearStorage();
         
         // 刷新失败，跳转到登录页
         window.location.href = '/login';

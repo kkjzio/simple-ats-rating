@@ -6,6 +6,7 @@
 const TOKEN_KEY = 'ats_access_token';
 const REFRESH_TOKEN_KEY = 'ats_refresh_token';
 const USER_KEY = 'ats_user_info';
+const AUTH_STORE_KEY = 'auth-storage'; // Zustand persist 的 key
 
 /**
  * 保存token
@@ -62,11 +63,12 @@ export const removeUserInfo = (): void => {
 };
 
 /**
- * 清除所有存储数据
+ * 清除所有存储数据（含 Zustand 持久化状态）
  */
 export const clearStorage = (): void => {
   removeToken();
   removeUserInfo();
+  localStorage.removeItem(AUTH_STORE_KEY);
 };
 
 /**

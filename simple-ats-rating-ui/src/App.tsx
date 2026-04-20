@@ -15,8 +15,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5分钟
+      refetchOnWindowFocus: true,  // 切换回窗口/标签页时自动重新获取数据
+      staleTime: 0,                 // 数据立即视为过期，每次挂载和窗口聚焦都重新拉取
     },
   },
 })
