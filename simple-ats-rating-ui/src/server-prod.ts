@@ -29,7 +29,13 @@ const server = serve({
       return new Response(file);
     }
 
-    // SPA fallback：所有未匹配路由返回 index.html 交给前端路由处理
+    // 静态资源（js/css/图片等）找不到时直接 404，不做 SPA fallback
+    // 防止浏览器拿到 text/html 当 JS 模块执行而报错
+    if (/\.[^/]+$/.test(url.pathname)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    // SPA fallback：未匹配的页面路由返回 index.html 交给前端路由处理
     return new Response(Bun.file(`${DIST_DIR}/index.html`));
   },
 });

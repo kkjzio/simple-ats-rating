@@ -129,6 +129,7 @@ const result = await Bun.build({
   minify: true,
   target: "browser",
   sourcemap: "linked",
+  publicPath: "/",  // 使用绝对路径，避免 SPA 嵌套路由下 F5 MIME 报错
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
   },
