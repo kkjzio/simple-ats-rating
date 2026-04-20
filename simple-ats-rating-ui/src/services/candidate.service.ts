@@ -198,7 +198,7 @@ export const deleteCandidate = async (id: string): Promise<void> => {
 /**
  * 批量导入候选人
  * @param sessionId 场次ID
- * @param file Excel文件
+ * @param file Excel/CSV文件
  */
 export const importCandidates = async (
   sessionId: string,
@@ -207,16 +207,13 @@ export const importCandidates = async (
   const formData = new FormData();
   formData.append('file', file);
 
-  const response: AxiosResponse<{
-    success: number;
-    failed: number;
-    errors?: any[];
-  }> = await apiClient.post(`/sessions/${sessionId}/candidates/import`, formData, {
+  const response: AxiosResponse<any> = await apiClient.post(`/sessions/${sessionId}/candidates/import`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
-  return response.data;
+  // API响应格式: { code, message, data: { total, success, failed, errors } }
+  return response.data.data;
 };
 
 /**
@@ -316,9 +313,9 @@ export const downloadResume = async (candidateId: string, filename?: string): Pr
  * 下载Excel导入模板
  */
 export const downloadTemplate = (): void => {
-  // 创建一个简单的CSV模板
-  const headers = ['姓名*', '性别', '手机*', '邮箱', '教育背景', '工作经验(年)', '备注'];
-  const example = ['张三', '男', '13800138000', 'zhangsan@example.com', '本科', '3', '优秀候选人'];
+  // 列顺序与后端导入解析保持一致：姓名, 手机, 邮箱(可选), 备注(可选)
+  const headers = ['姓名*', '手机*', '邮箱', '备注'];
+  const example = ['张三', '13800138000', 'zhangsan@example.com', '优秀候选人'];
   
   const csvContent = [
     headers.join(','),

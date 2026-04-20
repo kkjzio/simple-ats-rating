@@ -332,8 +332,8 @@ async def import_candidates(
     """批量导入候选人"""
     try:
         # 验证文件类型
-        if not file.filename.endswith(('.xlsx', '.xls')):
-            raise HTTPException(status_code=400, detail="只支持Excel文件(.xlsx, .xls)")
+        if not file.filename.endswith(('.xlsx', '.xls', '.csv')):
+            raise HTTPException(status_code=400, detail="只支持Excel(.xlsx, .xls)或CSV(.csv)文件")
 
         current_user_dict = {
             "_id": current_user.id,

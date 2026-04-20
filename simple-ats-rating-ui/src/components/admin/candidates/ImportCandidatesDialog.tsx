@@ -155,9 +155,9 @@ export const ImportCandidatesDialog: React.FC<ImportCandidatesDialogProps> = ({
             <div className="flex items-center gap-3">
               <FileSpreadsheet className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium">Excel导入模板</p>
+                <p className="text-sm font-medium">导入模板</p>
                 <p className="text-xs text-muted-foreground">
-                  下载模板文件，按格式填写候选人信息
+                  下载CSV模板，按格式填写：姓名、手机、邮箱、备注
                 </p>
               </div>
             </div>
@@ -193,7 +193,7 @@ export const ImportCandidatesDialog: React.FC<ImportCandidatesDialogProps> = ({
                   : '拖拽文件到此处，或点击选择文件'}
               </p>
               <p className="text-xs text-muted-foreground">
-                支持 CSV、XLS、XLSX 格式
+                支持 CSV、XLS、XLSX 格式，列顺序：姓名*、手机*、邮箱、备注
               </p>
             </div>
           ) : (

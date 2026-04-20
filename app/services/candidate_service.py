@@ -743,13 +743,24 @@ async def import_candidates(
     if not session:
         raise HTTPException(status_code=404, detail="场次不存在")
 
-    # 读取Excel文件
+    # 读取文件，支持 Excel 和 CSV
     try:
         content = await excel_file.read()
-        workbook = openpyxl.load_workbook(BytesIO(content))
-        sheet = workbook.active
+        filename = excel_file.filename or ""
+        if filename.endswith('.csv'):
+            import csv
+            import io
+            text = content.decode('utf-8-sig')  # 兼容BOM头
+            reader = csv.reader(io.StringIO(text))
+            rows = list(reader)[1:]  # 跳过表头
+            data_rows = rows
+            use_csv = True
+        else:
+            workbook = openpyxl.load_workbook(BytesIO(content))
+            sheet = workbook.active
+            use_csv = False
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Excel文件解析失败: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"文件解析失败: {str(e)}")
 
     # 解析数据
     total = 0
@@ -764,13 +775,18 @@ async def import_candidates(
 
     current_order = max_order_result[0].get("order", 0) if max_order_result else 0
 
-    # 跳过表头,从第2行开始
-    for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+    # 统一迭代行：列格式为 姓名, 手机, 邮箱(可选), 备注(可选)
+    if use_csv:
+        row_iter = enumerate(data_rows, start=2)
+    else:
+        row_iter = enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2)
+
+    for row_idx, row in row_iter:
         total += 1
 
         try:
-            # 解析行数据 (序号, 姓名, 手机号, 邮箱, 应聘岗位)
-            if len(row) < 3:
+            # 列定义：row[0]=姓名, row[1]=手机, row[2]=邮箱(可选), row[3]=备注(可选)
+            if len(row) < 2:
                 errors.append({
                     "row": row_idx,
                     "reason": "数据不完整"
@@ -778,9 +794,10 @@ async def import_candidates(
                 failed += 1
                 continue
 
-            name = str(row[1]).strip() if row[1] else ""
-            phone = str(row[2]).strip() if row[2] else ""
-            email = str(row[3]).strip() if row[3] and len(row) > 3 else None
+            name = str(row[0]).strip() if row[0] else ""
+            phone = str(row[1]).strip() if row[1] else ""
+            email = str(row[2]).strip() if len(row) > 2 and row[2] else None
+            notes = str(row[3]).strip() if len(row) > 3 and row[3] else None
 
             # 验证必填字段
             if not name or not phone:
@@ -852,7 +869,7 @@ async def import_candidates(
                 "resume_filename": None,
                 "resume_files": [],
                 "status": "waiting",
-                "notes": "",
+                "notes": notes or "",
                 "created_at": get_current_time(),
                 "updated_at": get_current_time()
             }
